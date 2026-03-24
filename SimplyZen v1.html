@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimplyZen</title>
+  <style>
+    :root {
+      --bg: #f4f4f1;
+      --surface: #ffffff;
+      --surface-alt: #f0f0eb;
+      --text: #111111;
+      --text-soft: #444444;
+      --text-faint: #666666;
+      --border: #1f1f1f;
+      --border-soft: #7a7a7a;
+      --focus: #000000;
+
+      --radius: 0;
+      --content-width: 520px;
+
+      --space-1: 8px;
+      --space-2: 12px;
+      --space-3: 16px;
+      --space-4: 20px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 40px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: var(--space-4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app {
+      width: min(100%, var(--content-width));
+      min-height: min(760px, calc(100vh - 32px));
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--space-6);
+    }
+
+    .header {
+      margin-bottom: var(--space-6);
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: var(--space-4);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      padding: var(--space-6);
+    }
+
+    .control-panel {
+      display: grid;
+      gap: var(--space-6);
+      min-height: 340px;
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .label-row {
+      color: var(--text);
+      font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+      line-height: 1.45;
+      font-weight: 600;
+      max-width: 20ch;
+    }
+
+    .input-stack {
+      display: grid;
+      gap: var(--space-3);
+      justify-items: center;
+      width: 100%;
+    }
+
+    .numeric-wrap {
+      display: grid;
+      grid-template-columns: auto auto;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      width: min(100%, 280px);
+      padding: var(--space-4);
+      background: var(--surface-alt);
+      border: 2px solid var(--border);
+    }
+
+    .numeric-wrap:focus-within {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .numeric-wrap input {
+      width: 88px;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: right;
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--text);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .numeric-wrap input::-webkit-outer-spin-button,
+    .numeric-wrap input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .numeric-wrap input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .numeric-wrap span {
+      color: var(--text-soft);
+      font-size: 1rem;
+      line-height: 1;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .timer-screen {
+      text-align: center;
+    }
+
+    .prep-panel,
+    .meditation-panel {
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      gap: var(--space-4);
+      min-height: 380px;
+      align-content: center;
+    }
+
+    .timer-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-faint);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: var(--space-2);
+      min-width: 140px;
+    }
+
+    .stacked-time {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-2);
+    }
+
+    .time-value {
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      min-height: 1.05em;
+      color: var(--text);
+    }
+
+    .time-unit {
+      color: var(--text-soft);
+      font-size: 0.98rem;
+      line-height: 1.4;
+      text-transform: lowercase;
+    }
+
+    .prep-timer {
+      font-size: clamp(4rem, 13vw, 6rem);
+      font-weight: 700;
+    }
+
+    .meditation-display {
+      font-size: clamp(4.4rem, 16vw, 7.4rem);
+      font-weight: 700;
+    }
+
+    .actions {
+      margin-top: var(--space-5);
+      display: flex;
+      justify-content: center;
+    }
+
+    button {
+      appearance: none;
+      border: 2px solid var(--border);
+      border-radius: 0;
+      min-width: min(100%, 320px);
+      min-height: 60px;
+      padding: 16px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    button:hover {
+      background: var(--surface-alt);
+    }
+
+    button:active {
+      background: #e7e7e1;
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .start-btn {
+      background: var(--text);
+      color: var(--surface);
+    }
+
+    .start-btn:hover {
+      background: #2a2a2a;
+    }
+
+    .start-btn:active {
+      background: #000000;
+    }
+
+    .stop-btn {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .session-summary {
+      margin-top: var(--space-5);
+      text-align: center;
+      color: var(--text-soft);
+      min-height: 1.5em;
+      font-size: 0.98rem;
+      line-height: 1.5;
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .session-summary strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: var(--space-2);
+      }
+
+      .app {
+        min-height: auto;
+        padding: var(--space-4);
+      }
+
+      .panel {
+        padding: var(--space-4);
+      }
+
+      .control-panel,
+      .prep-panel,
+      .meditation-panel {
+        min-height: 320px;
+      }
+
+      button,
+      .numeric-wrap {
+        width: 100%;
+      }
+
+      .numeric-wrap {
+        grid-template-columns: 1fr auto;
+      }
+
+      .numeric-wrap input {
+        width: 100%;
+      }
+    }
+.app-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  opacity: 0.75;
+}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="eyebrow">SimplyZen</div>
+    </header>
+
+    <section id="screenSetup" class="screen active" aria-label="Setup screen">
+      <div class="panel control-panel">
+        <div class="label-row">
+          <span>Session duration</span>
+        </div>
+
+        <div class="input-stack">
+          <label class="numeric-wrap" for="durationNumber">
+            <input
+              id="durationNumber"
+              type="number"
+              min="1"
+              max="180"
+              step="1"
+              value="10"
+              inputmode="numeric"
+              aria-label="Meditation duration in minutes"
+            />
+            <span>minutes</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="startButton" class="start-btn" type="button">Begin Session</button>
+      </div>
+
+      <div id="sessionSummary" class="session-summary" aria-live="polite"></div>
+    </section>
+
+    <section id="screenPreparation" class="screen timer-screen" aria-label="Preparation screen">
+      <div class="panel prep-panel">
+        <div class="timer-label">Preparation</div>
+
+        <div class="stacked-time" aria-live="polite">
+          <div id="prepTimer" class="prep-timer time-value">10</div>
+          <div class="time-unit">seconds remaining</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="stopPrepButton" class="stop-btn" type="button">End Session</button>
+      </div>
+    </section>
+
+    <section id="screenMeditation" class="screen timer-screen" aria-label="Meditation screen">
+      <div class="panel meditation-panel">
+        <div class="timer-label">Meditation</div>
+        <div class="stacked-time" aria-live="polite">
+          <div id="meditationDisplay" class="meditation-display time-value">10</div>
+          <div class="time-unit">minutes remaining</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="stopMeditationButton" class="stop-btn" type="button">End Session</button>
+      </div>
+    </section>
+	<div class="app-footer">Created by Andrew Myrman</div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const PREP_SECONDS = 10;
+      const MIN_DURATION = 1;
+      const MAX_DURATION = 180;
+
+      const durationNumber = document.getElementById("durationNumber");
+      const sessionSummary = document.getElementById("sessionSummary");
+
+      const screenSetup = document.getElementById("screenSetup");
+      const screenPreparation = document.getElementById("screenPreparation");
+      const screenMeditation = document.getElementById("screenMeditation");
+
+      const startButton = document.getElementById("startButton");
+      const stopPrepButton = document.getElementById("stopPrepButton");
+      const stopMeditationButton = document.getElementById("stopMeditationButton");
+
+      const prepTimer = document.getElementById("prepTimer");
+      const meditationDisplay = document.getElementById("meditationDisplay");
+
+      if (
+        !durationNumber ||
+        !sessionSummary ||
+        !screenSetup ||
+        !screenPreparation ||
+        !screenMeditation ||
+        !startButton ||
+        !stopPrepButton ||
+        !stopMeditationButton ||
+        !prepTimer ||
+        !meditationDisplay
+      ) {
+        return;
+      }
+
+      let animationFrameId = null;
+      let sessionState = "setup";
+      let prepStartTime = 0;
+      let meditationStartTime = 0;
+      let prepRemaining = PREP_SECONDS;
+      let meditationElapsedSeconds = 0;
+      let targetDurationMinutes = 10;
+      let targetReachedChimed = false;
+
+      class ReliableSoundPlayer {
+        constructor() {
+          this.audioContext = null;
+          this.unlocked = false;
+          this.buffers = new Map();
+          this.fallbackAudio = new Map();
+          this.pendingLoads = new Map();
+          this.activeSources = new Set();
+          this.initialized = false;
+        }
+
+        async init() {
+          if (this.initialized) return;
+          this.initialized = true;
+
+          this.prepareFallback("soundfile1", "soundfile1.ogg");
+          this.prepareFallback("soundfile2", "soundfile2.ogg");
+
+          if (!("AudioContext" in window || "webkitAudioContext" in window)) {
+            return;
+          }
+
+          try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioContextClass();
+          } catch {
+            this.audioContext = null;
+            return;
+          }
+
+          await Promise.allSettled([
+            this.loadBuffer("soundfile1", "soundfile1.ogg"),
+            this.loadBuffer("soundfile2", "soundfile2.ogg")
+          ]);
+        }
+
+        prepareFallback(name, src) {
+          try {
+            const audio = new Audio(src);
+            audio.preload = "auto";
+            audio.playsInline = true;
+            this.fallbackAudio.set(name, audio);
+          } catch {}
+        }
+
+        async unlock() {
+          this.unlocked = true;
+
+          if (!this.audioContext) return;
+
+          try {
+            if (this.audioContext.state === "suspended") {
+              await this.audioContext.resume();
+            }
+
+            const buffer = this.audioContext.createBuffer(1, 1, this.audioContext.sampleRate);
+            const source = this.audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(this.audioContext.destination);
+            source.start(0);
+          } catch {}
+        }
+
+        async loadBuffer(name, src) {
+          if (!this.audioContext) return null;
+          if (this.pendingLoads.has(name)) return this.pendingLoads.get(name);
+
+          const loadPromise = (async () => {
+            const response = await fetch(src, { cache: "force-cache" });
+            if (!response.ok) {
+              throw new Error(`Failed to load ${src}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer.slice(0));
+            this.buffers.set(name, audioBuffer);
+            return audioBuffer;
+          })();
+
+          this.pendingLoads.set(name, loadPromise);
+
+          try {
+            return await loadPromise;
+          } catch {
+            return null;
+          } finally {
+            this.pendingLoads.delete(name);
+          }
+        }
+
+        async play(name) {
+          if (!this.unlocked) return;
+
+          if (this.audioContext) {
+            try {
+              if (this.audioContext.state === "suspended") {
+                await this.audioContext.resume();
+              }
+
+              let buffer = this.buffers.get(name);
+              if (!buffer) {
+                const src = name === "soundfile1" ? "soundfile1.ogg" : "soundfile2.ogg";
+                buffer = await this.loadBuffer(name, src);
+              }
+
+              if (buffer) {
+                const source = this.audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(this.audioContext.destination);
+
+                this.activeSources.add(source);
+
+                source.onended = () => {
+                  this.activeSources.delete(source);
+                  try {
+                    source.disconnect();
+                  } catch {}
+                };
+
+                source.start(0);
+                return;
+              }
+            } catch {}
+          }
+
+          this.playFallback(name);
+        }
+
+        playFallback(name) {
+          const baseAudio = this.fallbackAudio.get(name);
+          if (!baseAudio) return;
+
+          try {
+            const instance = baseAudio.cloneNode(true);
+            instance.preload = "auto";
+            instance.playsInline = true;
+            instance.currentTime = 0;
+
+            const playback = instance.play();
+            if (playback && typeof playback.catch === "function") {
+              playback.catch(() => {});
+            }
+          } catch {}
+        }
+
+        stopAll() {
+          for (const source of this.activeSources) {
+            try {
+              source.stop(0);
+            } catch {}
+            try {
+              source.disconnect();
+            } catch {}
+          }
+          this.activeSources.clear();
+        }
+      }
+
+      const soundPlayer = new ReliableSoundPlayer();
+
+      function clampDuration(value) {
+        const numericValue = Number(value);
+        if (!Number.isFinite(numericValue)) return MIN_DURATION;
+        return Math.min(MAX_DURATION, Math.max(MIN_DURATION, Math.round(numericValue)));
+      }
+
+      function formatMinutesLabel(minutes) {
+        return String(Math.max(0, minutes));
+      }
+
+      function formatSummary(totalSeconds) {
+        if (totalSeconds < 60) {
+          return "less than 1 minute";
+        }
+
+        const wholeMinutes = Math.floor(totalSeconds / 60);
+        return `${wholeMinutes} minute${wholeMinutes === 1 ? "" : "s"}`;
+      }
+
+      function syncDurationInput() {
+        targetDurationMinutes = clampDuration(durationNumber.value);
+        durationNumber.value = String(targetDurationMinutes);
+
+        if (sessionState === "setup") {
+          meditationDisplay.textContent = formatMinutesLabel(targetDurationMinutes);
+        }
+      }
+
+      function showScreen(screenName) {
+        screenSetup.classList.toggle("active", screenName === "setup");
+        screenPreparation.classList.toggle("active", screenName === "preparation");
+        screenMeditation.classList.toggle("active", screenName === "meditation");
+      }
+
+      function updatePreparationDisplay() {
+        prepTimer.textContent = String(Math.max(0, prepRemaining));
+      }
+
+      function updateMeditationDisplay() {
+        const remainingSeconds = targetDurationMinutes * 60 - meditationElapsedSeconds;
+
+        if (remainingSeconds >= 0) {
+          const remainingMinutes = Math.ceil(remainingSeconds / 60);
+          meditationDisplay.textContent = formatMinutesLabel(remainingMinutes);
+          return;
+        }
+
+        const overMinutes = Math.ceil(Math.abs(remainingSeconds) / 60);
+        meditationDisplay.textContent = `+${overMinutes}`;
+      }
+
+      function stopLoop() {
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      }
+
+      function resetSessionState() {
+        prepRemaining = PREP_SECONDS;
+        meditationElapsedSeconds = 0;
+        targetReachedChimed = false;
+        prepStartTime = 0;
+        meditationStartTime = 0;
+      }
+
+      function renderSummary(totalSeconds) {
+        sessionSummary.textContent = "";
+
+        if (totalSeconds <= 0) return;
+
+        const textNode1 = document.createTextNode("You meditated for ");
+        const strong = document.createElement("strong");
+        strong.textContent = formatSummary(totalSeconds);
+
+        sessionSummary.append(textNode1, strong);
+      }
+
+      function startPreparation() {
+        if (sessionState !== "setup") return;
+
+        syncDurationInput();
+        stopLoop();
+        resetSessionState();
+
+        sessionSummary.textContent = "";
+        sessionState = "preparation";
+        prepStartTime = performance.now();
+
+        updatePreparationDisplay();
+        showScreen("preparation");
+        animationFrameId = requestAnimationFrame(runLoop);
+      }
+
+      function startMeditation(now) {
+        sessionState = "meditation";
+        meditationStartTime = now;
+        meditationElapsedSeconds = 0;
+        targetReachedChimed = false;
+
+        showScreen("meditation");
+        updateMeditationDisplay();
+      }
+
+      function endSession() {
+        const totalTime = meditationElapsedSeconds;
+
+        stopLoop();
+        soundPlayer.stopAll();
+
+        sessionState = "setup";
+        resetSessionState();
+        showScreen("setup");
+        renderSummary(totalTime);
+        updatePreparationDisplay();
+        meditationDisplay.textContent = formatMinutesLabel(targetDurationMinutes);
+      }
+
+      function maybePlayMinuteChime(previousElapsedSeconds, currentElapsedSeconds) {
+        const targetSeconds = targetDurationMinutes * 60;
+
+        if (!targetReachedChimed && currentElapsedSeconds >= targetSeconds) {
+          targetReachedChimed = true;
+          soundPlayer.play("soundfile2");
+          return;
+        }
+
+        if (!targetReachedChimed) {
+          const previousWholeMinutes = Math.floor(previousElapsedSeconds / 60);
+          const currentWholeMinutes = Math.floor(currentElapsedSeconds / 60);
+          const maxPreGoalMinute = targetDurationMinutes - 1;
+
+          if (
+            currentWholeMinutes > previousWholeMinutes &&
+            currentWholeMinutes > 0 &&
+            currentWholeMinutes <= maxPreGoalMinute
+          ) {
+            soundPlayer.play("soundfile1");
+          }
+
+          return;
+        }
+
+        const previousOvertimeWholeMinutes = Math.max(
+          0,
+          Math.floor((previousElapsedSeconds - targetSeconds) / 60)
+        );
+        const currentOvertimeWholeMinutes = Math.max(
+          0,
+          Math.floor((currentElapsedSeconds - targetSeconds) / 60)
+        );
+
+        if (
+          currentOvertimeWholeMinutes > previousOvertimeWholeMinutes &&
+          currentOvertimeWholeMinutes > 0
+        ) {
+          soundPlayer.play("soundfile1");
+        }
+      }
+
+      function runLoop(now) {
+        if (sessionState === "preparation") {
+          const elapsedMs = Math.max(0, now - prepStartTime);
+          const remainingSecondsPrecise = PREP_SECONDS - elapsedMs / 1000;
+          const nextPrepRemaining = Math.max(0, Math.ceil(remainingSecondsPrecise));
+
+          if (nextPrepRemaining !== prepRemaining) {
+            prepRemaining = nextPrepRemaining;
+            updatePreparationDisplay();
+          }
+
+          if (elapsedMs >= PREP_SECONDS * 1000) {
+            soundPlayer.play("soundfile2");
+            startMeditation(now);
+          }
+        } else if (sessionState === "meditation") {
+          const elapsedMs = Math.max(0, now - meditationStartTime);
+          const elapsedSecondsFloor = Math.floor(elapsedMs / 1000);
+
+          if (elapsedSecondsFloor !== meditationElapsedSeconds) {
+            const previousElapsedSeconds = meditationElapsedSeconds;
+            meditationElapsedSeconds = elapsedSecondsFloor;
+
+            maybePlayMinuteChime(previousElapsedSeconds, meditationElapsedSeconds);
+            updateMeditationDisplay();
+          }
+        }
+
+        if (sessionState === "preparation" || sessionState === "meditation") {
+          animationFrameId = requestAnimationFrame(runLoop);
+        } else {
+          animationFrameId = null;
+        }
+      }
+
+      durationNumber.addEventListener("input", syncDurationInput);
+      durationNumber.addEventListener("blur", syncDurationInput);
+
+      durationNumber.addEventListener("keydown", async (event) => {
+        if (event.key === "Enter" && sessionState === "setup") {
+          event.preventDefault();
+          await soundPlayer.unlock();
+          startPreparation();
+        }
+      });
+
+      startButton.addEventListener("click", async () => {
+        if (sessionState !== "setup") return;
+        await soundPlayer.unlock();
+        startPreparation();
+      });
+
+      stopPrepButton.addEventListener("click", endSession);
+      stopMeditationButton.addEventListener("click", endSession);
+
+      window.addEventListener("beforeunload", () => {
+        stopLoop();
+        soundPlayer.stopAll();
+      });
+
+      durationNumber.value = String(targetDurationMinutes);
+      syncDurationInput();
+      updatePreparationDisplay();
+      showScreen("setup");
+
+      soundPlayer.init().catch(() => {});
+    })();
+  </script>
+</body>
+</html>
